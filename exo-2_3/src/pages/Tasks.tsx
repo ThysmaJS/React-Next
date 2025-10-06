@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import type { Task } from '../services/taskService'
 import { fetchTasks, createTask, deleteTask as deleteTaskApi, fetchTask } from '../services/taskService'
 import { useAuth } from '../context/AuthContext'
+import { useErrorHandler } from '../hooks/useErrorHandler'
 
 export function TasksLayout() {
   const navigate = useNavigate()
@@ -29,6 +30,7 @@ export function TasksList() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const navigate = useNavigate()
   const { token } = useAuth()
+  const { handleAsyncError, showSuccess } = useErrorHandler()
 
   useEffect(() => {
     if (!token) {
@@ -37,25 +39,28 @@ export function TasksList() {
     }
     
     const loadTasks = async () => {
-      try {
-        const fetchedTasks = await fetchTasks(token)
+      const fetchedTasks = await handleAsyncError(
+        () => fetchTasks(token),
+        'Erreur lors du chargement des tâches'
+      )
+      if (fetchedTasks) {
         setTasks(fetchedTasks)
-      } catch (err) {
-        console.error('Erreur:', err)
       }
     }
     
     loadTasks()
-  }, [token, navigate])
+  }, [token, navigate]) // Suppression de handleAsyncError des dépendances
 
   const addTask = async () => {
     if (newTaskTitle.trim() && token) {
-      try {
-        const newTask = await createTask({ title: newTaskTitle.trim() }, token)
+      const newTask = await handleAsyncError(
+        () => createTask({ title: newTaskTitle.trim() }, token),
+        'Erreur lors de la création de la tâche'
+      )
+      if (newTask) {
         setTasks([...tasks, newTask])
         setNewTaskTitle('')
-      } catch (err) {
-        console.error('Erreur:', err)
+        showSuccess('Tâche créée avec succès!')
       }
     }
   }
@@ -63,21 +68,14 @@ export function TasksList() {
   const deleteTask = async (taskId: string) => {
     if (!token) return
     
-    console.log('Suppression de la tâche:', taskId, 'Type:', typeof taskId)
+    const success = await handleAsyncError(
+      () => deleteTaskApi(taskId, token),
+      'Erreur lors de la suppression de la tâche'
+    )
     
-    try {
-      await deleteTaskApi(taskId, token)
-      console.log('API suppression réussie, mise à jour de l\'état local')
-      
-      // Conversion pour s'assurer que la comparaison fonctionne
+    if (success !== null) {
       setTasks(tasks.filter(t => String(t.id) !== String(taskId)))
-      console.log('État local mis à jour')
-    } catch (err) {
-      console.error('Erreur:', err)
-      
-      // Même en cas d'erreur API, on supprime localement pour que l'interface soit à jour
-      console.log('Suppression locale malgré l\'erreur API')
-      setTasks(tasks.filter(t => String(t.id) !== String(taskId)))
+      showSuccess('Tâche supprimée avec succès!')
     }
   }
 
@@ -110,6 +108,7 @@ export function TaskDetail() {
   const navigate = useNavigate()
   const [task, setTask] = useState<Task | null>(null)
   const { token } = useAuth()
+  const { handleAsyncError } = useErrorHandler()
 
   useEffect(() => {
     if (!token) {
@@ -120,16 +119,17 @@ export function TaskDetail() {
     const loadTask = async () => {
       if (!id || !token) return
       
-      try {
-        const fetchedTask = await fetchTask(id, token)
+      const fetchedTask = await handleAsyncError(
+        () => fetchTask(id, token),
+        'Erreur lors du chargement de la tâche'
+      )
+      if (fetchedTask) {
         setTask(fetchedTask)
-      } catch (err) {
-        console.error('Erreur:', err)
       }
     }
     
     loadTask()
-  }, [id, token, navigate])
+  }, [id, token, navigate]) // Suppression de handleAsyncError des dépendances
 
   if (!task) {
     return <div>Chargement...</div>
