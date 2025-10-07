@@ -57,6 +57,7 @@ npm start
 cd exo-2_3
 npm install
 npm run dev
+npm test
 ```
 
 ### Pour utiliser le SECOND serveur :
@@ -64,7 +65,6 @@ npm run dev
 cd server
 npm install
 npm start
-npm test
 ```
 
 ## 📝 Notes
