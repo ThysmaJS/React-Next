@@ -12,6 +12,7 @@ export function AppLayout() {
         <nav>
           <NavLink to="/" style={active} end>Accueil</NavLink>
           <NavLink to="/tasks" style={active}>Tâches</NavLink>
+          <NavLink to="/redux-counter" style={active}>Compteur Redux</NavLink>
         </nav>
       </header>
       <main>

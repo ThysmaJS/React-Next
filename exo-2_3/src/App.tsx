@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ErrorProvider } from './context/ErrorContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ErrorDisplay } from './components/ErrorDisplay'
+import { ReduxCounter } from './components/ReduxCounter'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Routes>
             <Route element={<AppLayout />}>
               <Route index element={<Home />} />
+              <Route path="redux-counter" element={<ReduxCounter />} />
               <Route path="tasks" element={<TasksLayout />}>
                 <Route index element={<TasksList />} />
                 <Route path=":id" element={<TaskDetail />} />
